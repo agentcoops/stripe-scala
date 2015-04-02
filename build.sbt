@@ -4,18 +4,20 @@ version := io.Source.fromFile("VERSION").mkString.trim
 
 organization := "com.stripe"
 
-scalaVersion := "2.9.2"
-
-crossScalaVersions := Seq("2.9.1", "2.9.2")
+scalaVersion := "2.11.6"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation")
 
 libraryDependencies ++= Seq(
-  "org.apache.httpcomponents" % "httpclient" % "[4.1, 4.2)",
-  "net.liftweb" %% "lift-json" % "2.5-RC2",
-  "org.scalatest" %% "scalatest" % "1.6.1" % "test"
-)
+  "org.apache.httpcomponents" % "httpclient" % "4.2",
+  "org.json4s" %% "json4s-native" % "3.2.10",
+  "net.databinder.dispatch" %% "dispatch-core" % "0.11.2",
+  "org.scalatest" %% "scalatest" % "2.2.4" % "test")
 
+resolvers ++= Seq(
+  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+  "Sonatype OSS Resources" at "https://oss.sonatype.org/content/repositories/releases",
+  "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases")
 
 publishTo <<= version { v: String =>
   val nexus = "https://oss.sonatype.org/"

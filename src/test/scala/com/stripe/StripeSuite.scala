@@ -17,7 +17,7 @@ trait StripeSuite extends ShouldMatchers {
     "address_country" -> "USA",
     "number" -> "4242424242424242",
     "exp_month" -> 3,
-    "exp_year" -> 2015)
+    "exp_year" -> 2020)
 
   val DefaultChargeMap = Map("amount" -> 100, "currency" -> "usd", "card" -> DefaultCardMap)
 
