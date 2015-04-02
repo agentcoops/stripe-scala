@@ -25,7 +25,7 @@ import org.json4s.JsonDSL._
 
 abstract class APIResource {
   val ApiBase = "https://api.stripe.com/v1"
-  val BindingsVersion = "1.1.2"
+  val BindingsVersion = "1.1.3"
   val CharSet = "UTF-8"
 
   //lift-json format initialization
