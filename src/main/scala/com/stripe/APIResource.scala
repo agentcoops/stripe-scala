@@ -2,6 +2,9 @@ package com.stripe
 
 import java.net.URLEncoder
 
+import scala.concurrent._
+import ExecutionContext.Implicits.global
+
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
@@ -33,7 +36,8 @@ abstract class APIResource {
 
   //utility methods
   def base64(in: String) = new String(Base64.encodeBase64(in.getBytes(CharSet)))
-  def urlEncodePair(k:String, v: String) = "%s=%s".format(URLEncoder.encode(k, CharSet), URLEncoder.encode(v, CharSet))
+  def urlEncodePair(k:String, v: String) =
+    "%s=%s".format(URLEncoder.encode(k, CharSet), URLEncoder.encode(v, CharSet))
   val className = this.getClass.getSimpleName.toLowerCase.replace("$","")
   val classURL = "%s/%ss".format(ApiBase, className)
   def instanceURL(id: String) = "%s/%s".format(classURL, id)
@@ -59,14 +63,16 @@ abstract class APIResource {
     }
 
     //debug headers
-    val javaPropNames = List("os.name", "os.version", "os.arch", "java.version", "java.vendor", "java.vm.version", "java.vm.vendor")
+    val javaPropNames = List(
+      "os.name", "os.version", "os.arch", "java.version",
+      "java.vendor", "java.vm.version", "java.vm.vendor")
     val javaPropMap = javaPropNames.map(n => (n.toString, Properties.propOrEmpty(n).toString)).toMap
     val fullPropMap: Map[String, String] = javaPropMap + (
       "scala.version" -> Properties.scalaPropOrEmpty("version.number"),
       "bindings.version" -> BindingsVersion,
       "lang" -> "scala",
       "publisher" -> "stripe")
-    //val mapJson = write(fullPropMap)
+
     val defaultHeaders = asJavaCollection(List(
       new BasicHeader("X-Stripe-Client-User-Agent", compact(jrender(fullPropMap))),
       new BasicHeader("User-Agent", "Stripe/v1 ScalaBindings/%s".format(BindingsVersion)),
@@ -115,15 +121,16 @@ abstract class APIResource {
       EntityUtils.consume(entity)
       (body, response.getStatusLine.getStatusCode)
     } catch {
-      case e @ (_: java.io.IOException | _: ClientProtocolException) => throw APIConnectionException("Could not connect to Stripe (%s). Please check your internet connection and try again. If this problem persists, you should check Stripe's service status at https://twitter.com/stripe, or let us know at support@stripe.com.".format(ApiBase), e)
+      case e @ (_: java.io.IOException | _: ClientProtocolException) =>
+        throw APIConnectionException("Could not connect to Stripe (%s). Please check your internet connection and try again. If this problem persists, you should check Stripe's service status at https://twitter.com/stripe, or let us know at support@stripe.com.".format(ApiBase), e)
     } finally {
       client.getConnectionManager.shutdown()
     }
   }
 
-  def request(method: String, url: String, params: Map[String,_] = Map.empty): JValue = {
+  def request[T : Manifest](method: String, url: String, params: Map[String,_] = Map.empty): Future[T] = Future {
     val (rBody, rCode) = rawRequest(method, url, params)
-    interpretResponse(rBody, rCode)
+    interpretResponse(rBody, rCode).extract[T]
   }
 
   val CamelCaseRegex = new Regex("(_.)")

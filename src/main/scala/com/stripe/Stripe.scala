@@ -1,5 +1,8 @@
 package com.stripe
 
+import scala.concurrent._
+import ExecutionContext.Implicits.global
+
 import org.json4s._
 import org.json4s.native.Serialization.write
 import org.json4s.native.JsonMethods._
@@ -58,20 +61,20 @@ case class Charge(
   refunds: Option[Refunds] = None,
   application_fee: Option[String] = None
 ) extends APIResource {
-  def refund(): Charge = request("POST", "%s/refund".format(instanceURL(this.id))).extract[Charge]
+  def refund(): Future[Charge] = request[Charge]("POST", "%s/refund".format(instanceURL(this.id)))
 }
 
 case class ChargeCollection(total_count: Option[Int] = None, data: List[Charge])
 
 object Charge extends APIResource {
-  def create(params: Map[String,_]): Charge =
-    request("POST", classURL, params).extract[Charge]
+  def create(params: Map[String,_]): Future[Charge] =
+    request[Charge]("POST", classURL, params)
 
-  def retrieve(id: String): Charge =
-    request("GET", instanceURL(id)).extract[Charge]
+  def retrieve(id: String): Future[Charge] =
+    request[Charge]("GET", instanceURL(id))
 
-  def all(params: Map[String,_] = Map.empty): ChargeCollection =
-    request("GET", classURL, params).extract[ChargeCollection]
+  def all(params: Map[String,_] = Map.empty): Future[ChargeCollection] =
+    request[ChargeCollection]("GET", classURL, params)
 }
 
 case class Refunds(
@@ -106,20 +109,20 @@ case class Customer(
   discount: Option[Discount] = None,
   default_source: Option[String] = None
 ) extends APIResource {
-  def update(params: Map[String,_]): Customer = {
-    request("POST", instanceURL(this.id), params).extract[Customer]
+  def update(params: Map[String,_]): Future[Customer] = {
+    request[Customer]("POST", instanceURL(this.id), params)
   }
 
-  def delete(): DeletedCustomer = {
-    request("DELETE", instanceURL(this.id)).extract[DeletedCustomer]
+  def delete(): Future[DeletedCustomer] = {
+    request[DeletedCustomer]("DELETE", instanceURL(this.id))
   }
 
-  def updateSubscription(params: Map[String,_]): Subscription = {
-    request("POST", "%s/subscription".format(instanceURL(id)), params).extract[Subscription]
+  def updateSubscription(params: Map[String,_]): Future[Subscription] = {
+    request[Subscription]("POST", "%s/subscription".format(instanceURL(id)), params)
   }
 
-  def cancelSubscription(params: Map[String,_] = Map.empty): Subscription = {
-    request("DELETE", "%s/subscription".format(instanceURL(id)), params).extract[Subscription]
+  def cancelSubscription(params: Map[String,_] = Map.empty): Future[Subscription] = {
+    request[Subscription]("DELETE", "%s/subscription".format(instanceURL(id)), params)
   }
 }
 
@@ -128,16 +131,16 @@ case class DeletedCustomer(id: String, deleted: Boolean)
 case class CustomerCollection(total_count: Option[Int] = None, data: List[Customer])
 
 object Customer extends APIResource {
-  def create(params: Map[String,_]): Customer = {
-    request("POST", classURL, params).extract[Customer]
+  def create(params: Map[String,_]): Future[Customer] = {
+    request[Customer]("POST", classURL, params)
   }
 
-  def retrieve(id: String): Customer = {
-    request("GET", instanceURL(id)).extract[Customer]
+  def retrieve(id: String): Future[Customer] = {
+    request[Customer]("GET", instanceURL(id))
   }
 
-  def all(params: Map[String,_] = Map.empty): CustomerCollection = {
-    request("GET", classURL, params).extract[CustomerCollection]
+  def all(params: Map[String,_] = Map.empty): Future[CustomerCollection] = {
+    request[CustomerCollection]("GET", classURL, params)
   }
 }
 
@@ -152,12 +155,12 @@ case class Plan(
   interval_count: Option[Int] = None,
   subscriptions: Option[SubscriptionCollection] = None
 ) extends APIResource {
-  def update(params: Map[String,_]): Plan = {
-    request("POST", instanceURL(this.id), params).extract[Plan]
+  def update(params: Map[String,_]): Future[Plan] = {
+    request[Plan]("POST", instanceURL(this.id), params)
   }
 
-  def delete(): DeletedPlan = {
-    request("DELETE", instanceURL(this.id)).extract[DeletedPlan]
+  def delete(): Future[DeletedPlan] = {
+    request[DeletedPlan]("DELETE", instanceURL(this.id))
   }
 }
 
@@ -166,16 +169,16 @@ case class PlanCollection(total_count: Option[Int] = None, data: List[Plan])
 case class DeletedPlan(id: String, deleted: Boolean)
 
 object Plan extends APIResource {
-  def create(params: Map[String,_]): Plan = {
-    request("POST", classURL, params).extract[Plan]
+  def create(params: Map[String,_]): Future[Plan] = {
+    request[Plan]("POST", classURL, params)
   }
 
-  def retrieve(id: String): Plan = {
-    request("GET", instanceURL(id)).extract[Plan]
+  def retrieve(id: String): Future[Plan] = {
+    request[Plan]("GET", instanceURL(id))
   }
 
-  def all(params: Map[String,_] = Map.empty): PlanCollection = {
-    request("GET", classURL, params).extract[PlanCollection]
+  def all(params: Map[String,_] = Map.empty): Future[PlanCollection] = {
+    request[PlanCollection]("GET", classURL, params)
   }
 }
 
@@ -213,12 +216,12 @@ case class InvoiceItem(
   livemode: Boolean,
   description: Option[String],
   invoice: Option[Invoice]) extends APIResource {
-  def update(params: Map[String,_]): InvoiceItem = {
-    request("POST", instanceURL(this.id), params).extract[InvoiceItem]
+  def update(params: Map[String,_]): Future[InvoiceItem] = {
+    request[InvoiceItem]("POST", instanceURL(this.id), params)
   }
 
-  def delete(): DeletedInvoiceItem = {
-    request("DELETE", instanceURL(this.id)).extract[DeletedInvoiceItem]
+  def delete(): Future[DeletedInvoiceItem] = {
+    request[DeletedInvoiceItem]("DELETE", instanceURL(this.id))
   }
 }
 
@@ -227,16 +230,16 @@ case class DeletedInvoiceItem(id: String, deleted: Boolean)
 case class InvoiceItemCollection(total_count: Option[Int] = None, data: List[InvoiceItem])
 
 object InvoiceItem extends APIResource {
-  def create(params: Map[String,_]): InvoiceItem = {
-    request("POST", classURL, params).extract[InvoiceItem]
+  def create(params: Map[String,_]): Future[InvoiceItem] = {
+    request[InvoiceItem]("POST", classURL, params)
   }
 
-  def retrieve(id: String): InvoiceItem = {
-    request("GET", instanceURL(id)).extract[InvoiceItem]
+  def retrieve(id: String): Future[InvoiceItem] = {
+    request[InvoiceItem]("GET", instanceURL(id))
   }
 
-  def all(params: Map[String,_] = Map.empty): InvoiceItemCollection = {
-    request("GET", classURL, params).extract[InvoiceItemCollection]
+  def all(params: Map[String,_] = Map.empty): Future[InvoiceItemCollection] = {
+    request[InvoiceItemCollection]("GET", classURL, params)
   }
 }
 
@@ -274,16 +277,16 @@ case class Invoice(
 case class InvoiceCollection(total_count: Option[Int] = None, data: List[Invoice])
 
 object Invoice extends APIResource {
-  def retrieve(id: String): Invoice = {
-    request("GET", instanceURL(id)).extract[Invoice]
+  def retrieve(id: String): Future[Invoice] = {
+    request[Invoice]("GET", instanceURL(id))
   }
 
-  def all(params: Map[String,_] = Map.empty): InvoiceCollection = {
-    request("GET", classURL, params).extract[InvoiceCollection]
+  def all(params: Map[String,_] = Map.empty): Future[InvoiceCollection] = {
+    request[InvoiceCollection]("GET", classURL, params)
   }
 
-  def upcoming(params: Map[String, _]): Invoice = {
-    request("GET", "%s/upcoming".format(classURL), params).extract[Invoice]
+  def upcoming(params: Map[String, _]): Future[Invoice] = {
+    request[Invoice]("GET", "%s/upcoming".format(classURL), params)
   }
 }
 
@@ -296,12 +299,12 @@ case class Token(
 }
 
 object Token extends APIResource {
-  def create(params: Map[String,_]): Token = {
-    request("POST", classURL, params).extract[Token]
+  def create(params: Map[String,_]): Future[Token] = {
+    request[Token]("POST", classURL, params)
   }
 
-  def retrieve(id: String): Token = {
-    request("GET", instanceURL(id)).extract[Token]
+  def retrieve(id: String): Future[Token] = {
+    request[Token]("GET", instanceURL(id))
   }
 }
 
@@ -314,8 +317,8 @@ case class Coupon(
   maxRedemptions: Option[Int],
   timesRedeemed: Option[Int],
   durationInMonths: Option[Int]) extends APIResource {
-  def delete(): DeletedCoupon = {
-    request("DELETE", instanceURL(this.id)).extract[DeletedCoupon]
+  def delete(): Future[DeletedCoupon] = {
+    request[DeletedCoupon]("DELETE", instanceURL(this.id))
   }
 }
 
@@ -324,16 +327,16 @@ case class CouponCollection(total_count: Option[Int] = None, data: List[Coupon])
 case class DeletedCoupon(id: String, deleted: Boolean)
 
 object Coupon extends APIResource {
-  def create(params: Map[String,_]): Coupon = {
-    request("POST", classURL, params).extract[Coupon]
+  def create(params: Map[String,_]): Future[Coupon] = {
+    request[Coupon]("POST", classURL, params)
   }
 
-  def retrieve(id: String): Coupon = {
-    request("GET", instanceURL(id)).extract[Coupon]
+  def retrieve(id: String): Future[Coupon] = {
+    request[Coupon]("GET", instanceURL(id))
   }
 
-  def all(params: Map[String,_] = Map.empty): CouponCollection = {
-    request("GET", classURL, params).extract[CouponCollection]
+  def all(params: Map[String,_] = Map.empty): Future[CouponCollection] = {
+    request[CouponCollection]("GET", classURL, params)
   }
 }
 
@@ -347,7 +350,7 @@ case class Account(
 ) extends APIResource
 
 object Account extends APIResource {
-  def retrieve: Account = {
-    request("GET", singleInstanceURL).extract[Account]
+  def retrieve: Future[Account] = {
+    request[Account]("GET", singleInstanceURL)
   }
 }

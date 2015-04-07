@@ -11,7 +11,7 @@ trait StripeSuite extends ShouldMatchers {
   val DefaultCardMap = Map(
     "brand"-> "MasterCard",
     "funding" -> "credit",
-    "id" -> "card_15ms962eZvKYlo2CGC0C2PbE",
+    //"id" -> "card_15ms962eZvKYlo2CGC0C2PbE",
     "number" -> "5555555555554444",
     "fee" -> 0,
     "exp_month" -> 1,
